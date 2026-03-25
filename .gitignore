@@ -5,3 +5,4 @@ __pycache__/
 *.pyc
 .idea/
 config.yaml
+.claude/scheduled_tasks.lock

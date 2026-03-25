@@ -40,6 +40,23 @@ sources:
       name: NeonRev
       tier: webfetch
 
+# Scoring & trend detection
+scoring:
+  weights:
+    hackernews: { divisor: 10 }    # 800pts → 80/100
+    reddit: { divisor: 5 }         # 500pts → 100/100
+    github: { divisor: 50 }        # 3000 stars → 60/100
+    youtube: { default: 50 }       # no engagement data from RSS
+    twitter: { divisor: 2 }        # 50 likes → 25/100
+    app_stores: { default: 30 }    # no engagement data
+    gmail: { default: 70 }         # newsletter mention = strong signal
+  cross_source_multiplier: 1.5     # boost for items in 2+ sources
+  newsletter_mention_bonus: 15     # bonus if topic also appears in newsletters
+  velocity:
+    lookback_days: 7
+    acceleration_threshold: 2.0    # source count ratio to flag as 🔥
+    fading_threshold: 0.5          # ratio below this = 📉
+
 # Set your Obsidian vault path
 obsidian:
   vault_path: ~/Documents/obsidian/vault

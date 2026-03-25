@@ -11,7 +11,8 @@ Run `/setup` to get started, or manually:
 5. Set your Obsidian vault path in `config.yaml`
 
 ## Skills
-- `/digest` — Run full daily pipeline (collect, synthesize, write Obsidian notes)
+- `/digest` — Run full daily pipeline (collect, score, detect trends, write Obsidian notes)
+- `/weekly` — Generate weekly trend report (persistent, flash, rising signals)
 - `/add-source <url>` — Auto-categorize and add a new source
 - `/test-source <url_or_category>` — Test a scraper and validate output
 - `/list-sources` — Show all configured sources
@@ -19,6 +20,8 @@ Run `/setup` to get started, or manually:
 
 ## Quick Commands
 - Run collector: `.venv/bin/python -m src.collector`
+- Run scoring: `.venv/bin/python -m src.scoring` (daily velocity)
+- Run weekly scoring: `.venv/bin/python -m src.scoring --weekly`
 - Test one category: `.venv/bin/python -m src.collector --test reddit`
 - Force re-fetch (ignore cache): `.venv/bin/python -m src.collector --force`
 
@@ -29,6 +32,10 @@ Run `/setup` to get started, or manually:
 
 ## Key Patterns
 - All scrapers use `safe_fetch()` — never crash the pipeline
-- `config.yaml` is the single source of truth for all sources
+- `config.yaml` is the single source of truth for all sources and scoring weights
 - Daily cache in `.cache/{date}/` avoids re-fetching and preserves history
-- Cross-source trend detection: find topics in 3+ sources, rate signal 1-10
+- Scoring: 0-100 normalized scores, 1.5x cross-source multiplier, +15 newsletter mention bonus
+- Velocity: 🔥 accelerating, 🆕 new, 📉 fading, ➡️ steady (compared across 7 days)
+- App store gap detection: auto-check if trending topic has existing apps
+- YouTube transcripts: summarized to 5 bullet points (not raw dump)
+- Up to 3 idea notes per day for signals scoring >= 70
