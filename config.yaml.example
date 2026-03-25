@@ -1,0 +1,48 @@
+sources:
+  webfetch:
+    - url: https://news.ycombinator.com/news
+      name: HackerNews
+    - url: https://www.producthunt.com/
+      name: ProductHunt
+    - url: https://github.com/trending
+      name: GitHub Trending
+    - url: https://huggingface.co/papers
+      name: HuggingFace Papers
+    - url: https://news.smol.ai/
+      name: smol.ai
+
+  reddit:
+    - subreddit: singularity
+    - subreddit: AINewsMinute
+
+  youtube:
+    - channel: "@AIDailyBrief"
+      channel_id: UCKelCK4ZaO6HeEI1KQjqzWA
+    - channel: "@matthew_berman"
+      channel_id: UCawZsQWqfGSbCI5yjkdVkTA
+
+  twitter:
+    - handle: nlw       # Add your X handles here
+    - handle: edsim
+
+  app_stores:
+    - url: https://appmagic.rocks/top-charts/apps
+      name: AppMagic
+    - url: https://appraven.net/apps/popular?type=apps
+      name: AppRaven
+
+  gmail:
+    auto_discover: true
+    explicit_senders: []
+
+  data_sources:
+    - url: https://www.neonrev.com/
+      name: NeonRev
+      tier: webfetch
+
+# Set your Obsidian vault path
+obsidian:
+  vault_path: ~/Documents/obsidian/vault
+  daily_folder: Daily
+  ideas_folder: Ideas
+  weekly_folder: Weekly

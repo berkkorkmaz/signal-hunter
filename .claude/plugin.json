@@ -1,0 +1,14 @@
+{
+  "name": "daily-knowledge-builder",
+  "displayName": "Daily Knowledge Builder",
+  "description": "Automated daily knowledge aggregation from 15+ sources (HN, GitHub, Reddit, YouTube, X/Twitter, newsletters, app stores). Detects cross-source trending signals and generates Obsidian notes with business ideas.",
+  "version": "1.0.0",
+  "author": "berkkorkmaz",
+  "skills": [
+    ".claude/skills/digest.md",
+    ".claude/skills/add-source.md",
+    ".claude/skills/test-source.md",
+    ".claude/skills/list-sources.md",
+    ".claude/skills/setup.md"
+  ]
+}
