@@ -1,8 +1,8 @@
 {
-  "name": "daily-knowledge-builder",
-  "displayName": "Daily Knowledge Builder",
-  "description": "Automated daily knowledge aggregation from 15+ sources (HN, GitHub, Reddit, YouTube, X/Twitter, newsletters, app stores). Detects cross-source trending signals and generates Obsidian notes with business ideas.",
-  "version": "1.0.0",
+  "name": "signal-hunter",
+  "displayName": "Signal Hunter",
+  "description": "AI-powered daily trend hunter. Aggregates 15+ sources, scores cross-source signals with newsletter mention tracking and velocity detection, generates Obsidian notes with business ideas and sends email digests.",
+  "version": "2.1.0",
   "author": "berkkorkmaz",
   "skills": [
     ".claude/skills/digest.md",

@@ -1,86 +1,85 @@
-# Signal Hunter
+<p align="center">
+  <img src="assets/logo.png" alt="Signal Hunter" width="600" />
+</p>
 
-> AI-powered daily trend hunter. Aggregates 15+ sources, scores signals with cross-source detection and newsletter mention tracking, generates Obsidian notes with business ideas. Claude Code plugin.
+<p align="center">
+  <strong>AI-powered daily trend hunter</strong><br>
+  Aggregates 15+ sources, scores cross-source signals, generates Obsidian notes with business ideas.<br>
+  <a href="https://github.com/berkkorkmaz/signal-hunter">Claude Code Plugin</a>
+</p>
 
-## What It Does
+---
+
+## What it does
 
 Every day, it collects from:
 
-| Source | Method | What You Get |
+| Source | Method | What you get |
 |--------|--------|-------------|
-| HackerNews | WebFetch | Top stories with points & comments |
-| Product Hunt | WebFetch | Top products with taglines & upvotes |
-| GitHub Trending | WebFetch | Trending repos with stars & descriptions |
+| Hacker News | WebFetch | Top stories with points and comments |
+| Product Hunt | WebFetch | Top products with taglines and upvotes |
+| GitHub Trending | WebFetch | Trending repos with stars and descriptions |
 | HuggingFace | WebFetch | Trending papers with likes |
 | smol.ai | WebFetch | AI news summaries |
 | Reddit | Python API | Top 10 posts/day per subreddit |
-| YouTube | RSS + Transcripts | New videos with summarized transcripts |
+| YouTube | RSS + transcripts | New videos with summarized transcripts |
 | X/Twitter | X API v2 | Latest tweets from accounts you follow |
 | Gmail | Gmail MCP | Auto-discovered newsletter content |
-| App Stores | Playwright | Trending apps from AppMagic, AppRaven |
+| App stores | Playwright | Trending apps from AppMagic, AppRaven |
 
 Then it:
 1. **Scores** every item (0-100 normalized across sources)
-2. **Detects cross-source signals** — topics in 2+ sources get 1.5x multiplier
-3. **Tracks newsletter mentions** — +15 bonus (human-curated = strong signal)
-4. **Tracks velocity** — 🔥 accelerating, 🆕 new, 📉 fading, ➡️ steady (7-day lookback)
-5. **Detects app store gaps** — auto-checks if trending topic has existing apps
-6. **Summarizes transcripts** — YouTube transcripts → 5 bullet points + key quote
+2. **Detects cross-source signals** with 1.5x multiplier for topics in 2+ sources
+3. **Tracks newsletter mentions** with +15 bonus (human-curated = strong signal)
+4. **Tracks velocity** across 7 days (accelerating, new, fading, steady)
+5. **Detects app store gaps** for trending topics with no existing apps
+6. **Summarizes YouTube transcripts** into 5 bullet points + key quote
 7. **Generates up to 3 business ideas** per day (app, SaaS, BaaS, gaming, dev-tools)
 8. **Writes Obsidian notes** with daily digests, idea notes, and weekly rollups
-9. **Caches everything** — historical data preserved, same-day re-runs are free
+9. **Sends email digests** via Gmail SMTP to you or a Google Group
+10. **Caches everything** with historical data preserved per day
 
 ## Install
 
 ```bash
-# Clone
 git clone https://github.com/berkkorkmaz/signal-hunter.git
 cd signal-hunter
 
-# Setup
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 .venv/bin/playwright install chromium
 
-# Configure
 cp config.yaml.example config.yaml
-# Edit config.yaml with your sources and Obsidian vault path
+# edit config.yaml with your sources and Obsidian vault path
 
-# Optional: X/Twitter API
-echo "X_BEARER_TOKEN=your_token_here" > .env
+# optional: X/Twitter API and Gmail SMTP
+echo "X_BEARER_TOKEN=your_token" > .env
+echo "GMAIL_ADDRESS=you@gmail.com" >> .env
+echo "GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx" >> .env
 ```
 
-Or just run `/setup` in Claude Code.
+Or run `/setup` in Claude Code.
 
 ## Usage
 
-### As a Claude Code Plugin
+### As a Claude Code plugin
 
 ```
-/digest              # Run the full daily pipeline
-/weekly              # Generate weekly trend report
-/add-source <url>    # Add a new source (auto-categorized)
-/test-source reddit  # Test a category
-/list-sources        # Show all configured sources
+/digest              # run the full daily pipeline
+/weekly              # generate weekly trend report
+/add-source <url>    # add a new source (auto-categorized)
+/test-source reddit  # test a category
+/list-sources        # show all configured sources
 ```
 
-### As a Script
+### As a script
 
 ```bash
-# Run all scrapers
-.venv/bin/python -m src.collector
-
-# Run scoring engine (velocity + normalized scores)
-.venv/bin/python -m src.scoring
-
-# Weekly aggregate
-.venv/bin/python -m src.scoring --weekly
-
-# Test one category
-.venv/bin/python -m src.collector --test reddit
-
-# Force re-fetch (ignore daily cache)
-.venv/bin/python -m src.collector --force
+.venv/bin/python -m src.collector              # run all scrapers
+.venv/bin/python -m src.scoring                # velocity + scores
+.venv/bin/python -m src.scoring --weekly       # weekly aggregate
+.venv/bin/python -m src.collector --test reddit # test one category
+.venv/bin/python -m src.collector --force       # ignore daily cache
 ```
 
 ## Configuration
@@ -101,15 +100,18 @@ sources:
     - handle: nlw
     - handle: edsim
 
-  # ... see config.yaml.example for all options
-
 scoring:
   weights:
-    hackernews: { divisor: 10 }    # 800pts → 80/100
-    reddit: { divisor: 5 }         # 500pts → 100/100
-    gmail: { default: 70 }         # newsletter mention = strong signal
+    hackernews: { divisor: 10 }
+    reddit: { divisor: 5 }
+    gmail: { default: 70 }
   cross_source_multiplier: 1.5
-  newsletter_mention_bonus: 15     # bonus if topic in newsletters
+  newsletter_mention_bonus: 15
+
+email:
+  enabled: true
+  recipients:
+    - your-group@googlegroups.com
 
 obsidian:
   vault_path: ~/Documents/obsidian/vault
@@ -118,48 +120,48 @@ obsidian:
   weekly_folder: Weekly
 ```
 
-### X/Twitter API (Optional)
+### X/Twitter API (optional)
 
 1. Go to [developer.x.com](https://developer.x.com)
-2. Create a project → generate a Bearer Token
+2. Create a project, generate a Bearer Token
 3. Add to `.env`: `X_BEARER_TOKEN=your_token`
 
-Free tier (1,500 tweets/month) works for a few handles. Basic ($100/month) for more.
+### Gmail SMTP (optional)
 
-### Gmail (Optional)
+1. Enable 2FA on your Google account
+2. Generate an app password at [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
+3. Add to `.env`: `GMAIL_ADDRESS` and `GMAIL_APP_PASSWORD`
 
-Requires the Claude Gmail MCP extension. Enable it in Claude Code settings and authorize with your Gmail account.
+### Gmail MCP (optional)
+
+For newsletter auto-discovery, enable the Claude Gmail plugin in Claude Code settings.
 
 ## Output
-
-Daily notes are written to your Obsidian vault:
 
 ```
 vault/
   Daily/
-    2026-03-25.md    # Full daily digest with scored trends
+    2026-03-25.md                          # daily digest with scored trends
   Ideas/
-    idea-2026-03-25-ai-security.md      # Up to 3 ideas per day
+    idea-2026-03-25-ai-security.md         # up to 3 ideas per day
     idea-2026-03-25-agent-monitoring.md
     idea-2026-03-25-task-manager.md
   Weekly/
-    2026-W13.md      # Weekly rollup with persistent/flash/rising signals
+    2026-W13.md                            # weekly rollup
 ```
 
-## How Trend Detection Works
+Email digests are also sent to configured recipients with the same content.
 
-The system catches emerging signals early by combining scoring, cross-source detection, and velocity tracking:
+## How trend detection works
 
-1. **Score normalization** (0-100) — each source's raw engagement mapped to a common scale
-2. **Cross-source multiplier** (1.5x) — topics in 2+ source categories get boosted
-3. **Newsletter mention bonus** (+15) — human-curated newsletters are strong signal amplifiers
-4. **Velocity tracking** — compares against 7 days of cached data to detect:
-   - 🔥 **Accelerating**: source count doubled vs yesterday
-   - 🆕 **New**: first appearance today
-   - 📉 **Fading**: declining from peak
-   - ➡️ **Steady**: stable presence
-5. **App store gap detection** — auto-checks if anyone has already built it
-6. **Weekly rollups** — persistent trends (5+ days), flash signals (peaked and faded), rising signals (watch next week)
+The system catches emerging signals early by combining multiple detection methods:
+
+1. **Score normalization** (0-100) across all source types
+2. **Cross-source multiplier** (1.5x) for topics appearing in 2+ sources
+3. **Newsletter mention bonus** (+15) because human-curated newsletters are strong signal amplifiers
+4. **Velocity tracking** against 7 days of cached data
+5. **App store gap detection** to find market opportunities
+6. **Weekly rollups** categorizing persistent trends, flash signals, and rising topics
 
 ## License
 

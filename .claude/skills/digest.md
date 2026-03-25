@@ -223,3 +223,28 @@ tags: [idea, {category}, {related_tags}]
 - Signal: [[{today_date}#{topic_name}]]
 - Sources: [{title1}]({url1}), [{title2}]({url2})
 ```
+
+## Step 8: Send Email Summary
+
+Check `config.yaml` → `email`. If `enabled: true`, send a summary email using:
+
+```bash
+cd <project_root> && .venv/bin/python -c "
+from src.email_sender import send_digest_summary
+send_digest_summary(
+    date='{today_date}',
+    executive_summary='{executive_summary}',
+    trending_topics=[
+        {'emoji': '{emoji}', 'name': '{topic}', 'score': {score}, 'velocity': '{velocity}', 'sources': '{sources}'},
+        # ... for each trending topic
+    ],
+    ideas=[
+        {'title': '{idea_title}', 'category': '{category}', 'score': {score}},
+        # ... for each idea
+    ],
+    to={recipients_from_config_or_None},
+)
+"
+```
+
+If `recipients` is empty, it sends to self. If it contains a Google Group address (e.g. `signal-hunter@googlegroups.com`), all group members receive it.

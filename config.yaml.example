@@ -57,6 +57,12 @@ scoring:
     acceleration_threshold: 2.0    # source count ratio to flag as 🔥
     fading_threshold: 0.5          # ratio below this = 📉
 
+# Email notifications (optional)
+# Set GMAIL_ADDRESS and GMAIL_APP_PASSWORD in .env
+email:
+  enabled: true
+  recipients: []  # empty = send to self. Add emails to send to others.
+
 # Set your Obsidian vault path
 obsidian:
   vault_path: ~/Documents/obsidian/vault
