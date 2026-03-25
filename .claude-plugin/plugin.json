@@ -1,0 +1,11 @@
+{
+  "name": "signal-hunter",
+  "description": "AI-powered daily trend hunter. Aggregates 15+ sources (HN, GitHub, Reddit, YouTube, X/Twitter, newsletters, app stores), detects cross-source signals, and generates Obsidian notes with business ideas.",
+  "version": "1.0.0",
+  "author": {
+    "name": "berkkorkmaz"
+  },
+  "homepage": "https://github.com/berkkorkmaz/signal-hunter",
+  "repository": "https://github.com/berkkorkmaz/signal-hunter",
+  "license": "MIT"
+}
