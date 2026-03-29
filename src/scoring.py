@@ -89,6 +89,8 @@ def normalize_score(item: ContentItem, weights: dict) -> float:
         normalized = weights.get("app_stores", {}).get("default", 30)
     elif category == "gmail" or "newsletter" in source_lower:
         normalized = weights.get("gmail", {}).get("default", 70)
+    elif category == "api_endpoints":
+        normalized = weights.get("api_endpoints", {}).get("default", 45)
     else:
         # GitHub trending or other webfetch sources
         if item.extra.get("stars_today"):
@@ -143,7 +145,7 @@ def apply_cross_source_multiplier(
         for j, kw_j in enumerate(item_keywords):
             if j <= i or j in assigned:
                 continue
-            if _jaccard_similarity(kw_i, kw_j) > 0.3:
+            if _jaccard_similarity(kw_i, kw_j) > 0.35:
                 group.add(j)
                 merged_kw |= kw_j
                 assigned.add(j)
@@ -159,7 +161,7 @@ def apply_cross_source_multiplier(
         mentioned_in_newsletter = False
         newsletter_sources = []
         for nl_kw_set, nl_source in newsletter_keywords.items():
-            if _jaccard_similarity(group_keywords, nl_kw_set) > 0.2:
+            if _jaccard_similarity(group_keywords, nl_kw_set) > 0.25:
                 mentioned_in_newsletter = True
                 newsletter_sources.append(nl_source)
 
@@ -167,9 +169,11 @@ def apply_cross_source_multiplier(
             item = items[idx]
             base_score = normalize_score(item, weights)
 
-            # Cross-source multiplier
-            if source_count >= 2:
+            # Tiered cross-source multiplier: 1.3x for 2 sources, full for 3+
+            if source_count >= 3:
                 base_score *= multiplier
+            elif source_count == 2:
+                base_score *= (1 + (multiplier - 1) * 0.6)  # e.g. 1.3x when multiplier=1.5
 
             # Newsletter mention bonus
             if mentioned_in_newsletter:
@@ -193,7 +197,7 @@ def compute_velocity(days: int = 7) -> List[dict]:
 
     # Load all items per day
     daily_topics = {}  # {day: {topic_keywords_frozen: {sources, titles, max_score}}}
-    source_keys = ["reddit", "youtube", "twitter", "app_stores"]
+    source_keys = ["reddit", "youtube", "twitter", "app_stores", "api_endpoints"]
 
     for day in cached_days[-(days + 1):]:
         daily_topics[day] = {}
@@ -235,7 +239,7 @@ def compute_velocity(days: int = 7) -> List[dict]:
                 continue
             # Check if topic existed on this day
             for prev_kw, prev_data in daily_topics[prev_day].items():
-                if _jaccard_similarity(kw_set, prev_kw) > 0.3:
+                if _jaccard_similarity(kw_set, prev_kw) > 0.35:
                     if prev_day < first_seen:
                         first_seen = prev_day
                     days_active += 1
@@ -291,7 +295,7 @@ def compute_weekly_aggregate(days: int = 7) -> dict:
     topic_tracker = defaultdict(lambda: {
         "days": [], "sources_per_day": [], "max_score": 0, "titles": []
     })
-    source_keys = ["reddit", "youtube", "twitter", "app_stores"]
+    source_keys = ["reddit", "youtube", "twitter", "app_stores", "api_endpoints"]
 
     for day in cached_days[-days:]:
         for sk in source_keys:
@@ -305,7 +309,7 @@ def compute_weekly_aggregate(days: int = 7) -> dict:
                 # Find matching topic or create new
                 matched = False
                 for existing_kw in list(topic_tracker.keys()):
-                    if _jaccard_similarity(kw, existing_kw) > 0.3:
+                    if _jaccard_similarity(kw, existing_kw) > 0.35:
                         tracker = topic_tracker[existing_kw]
                         if day not in tracker["days"]:
                             tracker["days"].append(day)

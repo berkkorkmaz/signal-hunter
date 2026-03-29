@@ -167,6 +167,9 @@ For each video with transcript, show the 5-bullet summary:
 ### smol.ai News
 {headlines and summaries}
 
+### AI Tool Launches (API Endpoints)
+{**name** — description — [categories]}
+
 ### App Charts
 {app name — category}
 

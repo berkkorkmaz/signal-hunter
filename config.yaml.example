@@ -10,10 +10,19 @@ sources:
       name: HuggingFace Papers
     - url: https://news.smol.ai/
       name: smol.ai
+    - url: https://www.superhuman.ai/
+      name: Superhuman AI
+    - url: https://www.bensbites.com/
+      name: Ben's Bites
+    - url: https://techcrunch.com/category/artificial-intelligence/
+      name: TechCrunch AI
+    - url: https://www.futurepedia.io/ai-innovations
+      name: Futurepedia Innovations
 
   reddit:
     - subreddit: singularity
     - subreddit: AINewsMinute
+    - subreddit: LocalLLaMA
 
   youtube:
     - channel: "@AIDailyBrief"
@@ -30,6 +39,18 @@ sources:
       name: AppMagic
     - url: https://appraven.net/apps/popular?type=apps
       name: AppRaven
+
+  # Direct JSON API endpoints — structured data, no scraping needed
+  api_endpoints:
+    - url: https://www.futurepedia.io/api/homepage/tools
+      name: Futurepedia Tools
+      method: POST
+      headers:
+        origin: https://www.futurepedia.io
+        referer: https://www.futurepedia.io/
+      body: {}
+      parser: futurepedia_tools
+      source_type: product_discovery
 
   gmail:
     auto_discover: true
@@ -50,7 +71,8 @@ scoring:
     twitter: { divisor: 2 }        # 50 likes → 25/100
     app_stores: { default: 30 }    # no engagement data
     gmail: { default: 70 }         # newsletter mention = strong signal
-  cross_source_multiplier: 1.5     # boost for items in 2+ sources
+    api_endpoints: { default: 45 } # structured API data, medium-high signal
+  cross_source_multiplier: 1.5     # tiered: 1.3x for 2 sources, full 1.5x for 3+
   newsletter_mention_bonus: 15     # bonus if topic also appears in newsletters
   velocity:
     lookback_days: 7
@@ -63,9 +85,11 @@ email:
   enabled: true
   recipients: []  # empty = send to self. Add emails to send to others.
 
-# Set your Obsidian vault path
-obsidian:
-  vault_path: ~/Documents/obsidian/vault
+# Output directory for daily notes, ideas, and weekly rollups.
+# Works with any folder — Obsidian is optional.
+# If you use Obsidian, point this to your vault path.
+output:
+  vault_path: ~/Documents/signal-hunter-output
   daily_folder: Daily
   ideas_folder: Ideas
   weekly_folder: Weekly

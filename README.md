@@ -4,7 +4,7 @@
 
 <p align="center">
   <strong>AI-powered daily trend hunter</strong><br>
-  Aggregates 15+ sources, scores cross-source signals, generates Obsidian notes with business ideas.
+  Aggregates 20+ sources, scores cross-source signals, generates Obsidian notes with business ideas.
 </p>
 
 ---
@@ -20,10 +20,15 @@ Every day, it collects from:
 | GitHub Trending | WebFetch | Trending repos with stars and descriptions |
 | HuggingFace | WebFetch | Trending papers with likes |
 | smol.ai | WebFetch | AI news summaries |
-| Reddit | Python API | Top 10 posts/day per subreddit |
+| Superhuman AI | WebFetch | Curated AI newsletter content |
+| Ben's Bites | WebFetch | AI startup and product coverage |
+| TechCrunch AI | WebFetch | Enterprise AI news and funding |
+| Futurepedia Innovations | WebFetch | Top 100 tech company AI developments |
+| Reddit | Python API | Top 10 posts/day per subreddit (incl. LocalLLaMA) |
 | YouTube | RSS + transcripts | New videos with summarized transcripts |
 | X/Twitter | X API v2 | Latest tweets from accounts you follow |
 | Gmail | Gmail MCP | Auto-discovered newsletter content |
+| Futurepedia Tools | API Endpoint | New AI tool launches (structured JSON) |
 | App stores | Playwright | Trending apps from AppMagic, AppRaven |
 
 Then it:
@@ -34,7 +39,7 @@ Then it:
 5. **Detects app store gaps** for trending topics with no existing apps
 6. **Summarizes YouTube transcripts** into 5 bullet points + key quote
 7. **Generates up to 3 business ideas** per day (app, SaaS, BaaS, gaming, dev-tools)
-8. **Writes Obsidian notes** with daily digests, idea notes, and weekly rollups
+8. **Writes markdown notes** to any folder (works great with Obsidian, but not required)
 9. **Sends email digests** via Gmail SMTP to you or a Google Group
 10. **Caches everything** with historical data preserved per day
 
@@ -46,7 +51,7 @@ python3 -m venv .venv
 .venv/bin/playwright install chromium
 
 cp config.yaml.example config.yaml
-# edit config.yaml with your sources and Obsidian vault path
+# edit config.yaml with your sources and output path
 
 # optional: X/Twitter API and Gmail SMTP
 echo "X_BEARER_TOKEN=your_token" > .env
@@ -109,8 +114,9 @@ email:
   recipients:
     - your-group@googlegroups.com
 
-obsidian:
-  vault_path: ~/Documents/obsidian/vault
+# Output directory — any folder works, Obsidian is optional
+output:
+  vault_path: ~/Documents/signal-hunter-output
   daily_folder: Daily
   ideas_folder: Ideas
   weekly_folder: Weekly
@@ -134,8 +140,10 @@ For newsletter auto-discovery, enable the Claude Gmail plugin in Claude Code set
 
 ## Output
 
+Markdown files written to your configured `vault_path` (any folder — Obsidian is optional):
+
 ```
-vault/
+output/
   Daily/
     2026-03-25.md                          # daily digest with scored trends
   Ideas/
@@ -153,7 +161,7 @@ Email digests are also sent to configured recipients with the same content.
 The system catches emerging signals early by combining multiple detection methods:
 
 1. **Score normalization** (0-100) across all source types
-2. **Cross-source multiplier** (1.5x) for topics appearing in 2+ sources
+2. **Tiered cross-source multiplier** (1.3x for 2 sources, 1.5x for 3+) to reward true convergence
 3. **Newsletter mention bonus** (+15) because human-curated newsletters are strong signal amplifiers
 4. **Velocity tracking** against 7 days of cached data
 5. **App store gap detection** to find market opportunities

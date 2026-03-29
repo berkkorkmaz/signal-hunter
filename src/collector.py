@@ -59,6 +59,14 @@ def collect_app_stores(config: dict, force: bool = False) -> List[ContentItem]:
     return _collect_with_cache("app_stores", lambda: PlaywrightScraper(sources).safe_fetch(), force)
 
 
+def collect_api_endpoints(config: dict, force: bool = False) -> List[ContentItem]:
+    from src.scrapers.api_endpoints import APIEndpointScraper
+    sources = config.get("sources", {}).get("api_endpoints", [])
+    if not sources:
+        return []
+    return _collect_with_cache("api_endpoints", lambda: APIEndpointScraper(sources).safe_fetch(), force)
+
+
 def collect_all(categories: List[str] = None, force: bool = False) -> List[ContentItem]:
     """Run all scrapers (or specific categories) and return items.
     Uses daily cache unless force=True."""
@@ -70,6 +78,7 @@ def collect_all(categories: List[str] = None, force: bool = False) -> List[Conte
         "youtube": collect_youtube,
         "twitter": collect_twitter,
         "app_stores": collect_app_stores,
+        "api_endpoints": collect_api_endpoints,
     }
 
     for name, collector_fn in collectors.items():
