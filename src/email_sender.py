@@ -97,14 +97,6 @@ def send_full_digest(
     C2 = "#1e40af"   # deep blue (headings)
     CL = "#3b82f6"   # lighter blue (accents)
     CB = "#eff6ff"   # blue tint background
-    # Embed logo as base64 to avoid CDN cache issues
-    import base64 as _b64
-    _logo_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "logo-email.png")
-    if os.path.exists(_logo_path):
-        with open(_logo_path, "rb") as _f:
-            LOGO_URL = "data:image/png;base64," + _b64.b64encode(_f.read()).decode()
-    else:
-        LOGO_URL = "https://raw.githubusercontent.com/berkkorkmaz/signal-hunter/main/assets/logo-email.png"
 
     # ── Trending Topics ──
     topics_html = ""
@@ -209,7 +201,6 @@ def send_full_digest(
 <div style="max-width:620px;margin:0 auto;background:#ffffff;">
 
     <div style="background:#f8fafc;padding:36px 24px 28px;text-align:center;border-bottom:3px solid #2563eb;">
-        <img src="{LOGO_URL}" alt="Signal Hunter" style="width:72px;margin-bottom:14px;" />
         <div style="font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#2563eb;">Signal Hunter</div>
         <div style="width:40px;height:2px;background:#2563eb;margin:10px auto;border-radius:1px;"></div>
         <div style="font-size:22px;font-weight:300;color:#0f172a;letter-spacing:-0.3px;">{date}</div>
@@ -235,9 +226,7 @@ def send_full_digest(
     </div>
 
     <div style="padding:16px 24px;background:#f8fafc;border-top:3px solid #2563eb;text-align:center;">
-        <div style="font-size:11px;color:#64748b;">
-            <a href="https://github.com/berkkorkmaz/signal-hunter" style="color:#2563eb;text-decoration:none;">github.com/berkkorkmaz/signal-hunter</a>
-        </div>
+        <div style="font-size:11px;color:#64748b;">Signal Hunter &mdash; Daily Digest</div>
     </div>
 
 </div></body></html>"""

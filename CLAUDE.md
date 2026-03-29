@@ -11,6 +11,7 @@ Run `/setup` to get started, or manually:
 5. Set your Obsidian vault path in `config.yaml`
 
 ## Skills
+- `/deploy` — **One-command setup**: configure sources and deploy with local launchd automation
 - `/digest` — Run full daily pipeline (collect, score, detect trends, write Obsidian notes)
 - `/weekly` — Generate weekly trend report (persistent, flash, rising signals)
 - `/add-source <url>` — Auto-categorize and add a new source

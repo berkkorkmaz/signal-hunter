@@ -37,4 +37,4 @@ Signal Hunter interacts with third-party APIs (Reddit, YouTube, X/Twitter) using
 
 ## Contact
 
-For questions about this privacy policy, open an issue at [github.com/berkkorkmaz/signal-hunter](https://github.com/berkkorkmaz/signal-hunter/issues).
+For questions about this privacy policy, reach out directly.

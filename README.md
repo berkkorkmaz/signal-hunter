@@ -4,8 +4,7 @@
 
 <p align="center">
   <strong>AI-powered daily trend hunter</strong><br>
-  Aggregates 15+ sources, scores cross-source signals, generates Obsidian notes with business ideas.<br>
-  <a href="https://github.com/berkkorkmaz/signal-hunter">Claude Code Plugin</a>
+  Aggregates 15+ sources, scores cross-source signals, generates Obsidian notes with business ideas.
 </p>
 
 ---
@@ -42,9 +41,6 @@ Then it:
 ## Install
 
 ```bash
-git clone https://github.com/berkkorkmaz/signal-hunter.git
-cd signal-hunter
-
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 .venv/bin/playwright install chromium

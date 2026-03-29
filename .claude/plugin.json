@@ -10,6 +10,7 @@
     ".claude/skills/test-source.md",
     ".claude/skills/list-sources.md",
     ".claude/skills/setup.md",
-    ".claude/skills/weekly.md"
+    ".claude/skills/weekly.md",
+    ".claude/skills/deploy.md"
   ]
 }
