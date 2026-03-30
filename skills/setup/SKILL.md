@@ -68,7 +68,57 @@ This is optional — the system works without Gmail, it just skips newsletters.
 
 Run `/test-source all` to verify everything works.
 
-### 7. Schedule (Optional)
+### 7. Install Global Plugin (Optional — Recommended)
+
+Ask: **"Would you like to use /digest from anywhere in Claude (desktop app, any directory)?"**
+
+If yes, install Signal Hunter as a global Claude plugin:
+
+```bash
+# Create plugin directory
+mkdir -p ~/.claude/plugins/cache/local/signal-hunter/1.0.0/commands
+```
+
+Then write the digest command file to `~/.claude/plugins/cache/local/signal-hunter/1.0.0/commands/digest.md`:
+
+```markdown
+---
+allowed-tools: Bash(*), Read(*), Write(*), Edit(*), Glob(*), Grep(*), WebFetch(*), mcp__claude_ai_Gmail__gmail_search_messages(*), mcp__claude_ai_Gmail__gmail_read_message(*)
+description: Run Signal Hunter daily digest
+disable-model-invocation: false
+---
+
+# Signal Hunter Daily Digest
+
+Read {project_root}/CLAUDE.md and {project_root}/skills/digest/SKILL.md for full instructions.
+Working directory: {project_root}
+```
+
+Replace `{project_root}` with the actual path (e.g., `/Users/me/signal-hunter`).
+
+Register in `~/.claude/plugins/installed_plugins.json` by adding to the `plugins` object:
+
+```json
+"signal-hunter@local": [
+  {
+    "scope": "user",
+    "installPath": "~/.claude/plugins/cache/local/signal-hunter/1.0.0",
+    "version": "1.0.0",
+    "installedAt": "{current_iso_date}",
+    "lastUpdated": "{current_iso_date}"
+  }
+]
+```
+
+Enable in `~/.claude/settings.json`:
+
+```json
+"signal-hunter@local": true
+```
+
+Tell the user: **"Done! You can now run /digest from any Claude session — desktop app, terminal, anywhere."**
+
+### 8. Schedule (Optional)
 
 To run daily at 10 AM, the user can either:
 - Use Claude Code cron (session-only, 7-day expiry): just run `/digest` and it gets scheduled

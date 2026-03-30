@@ -59,7 +59,7 @@ echo "GMAIL_ADDRESS=you@gmail.com" >> .env
 echo "GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx" >> .env
 ```
 
-Or run `/setup` in Claude Code.
+Or run `/setup` in Claude Code — it also offers to install `/digest` as a global plugin so you can run it from the Claude desktop app or any directory.
 
 ## Usage
 
