@@ -8,13 +8,15 @@ user_invocable: true
 
 You are running the Daily Knowledge Builder pipeline. First, determine the project root (where `config.yaml` lives) and read `config.yaml` to get all settings.
 
+**Date handling**: By default, the pipeline targets **yesterday's date** — running for "today" only captures partial data. All commands below automatically default to yesterday. To override, add `--date YYYY-MM-DD` or `--date today`.
+
 ## Step 1: Collect Data
 
 ### 1a. Run Python Collector
 ```bash
 cd <project_root> && .venv/bin/python -m src.collector
 ```
-This fetches Reddit, YouTube (with transcripts), X/Twitter, and app store data. Uses daily cache — re-runs are free.
+This fetches Reddit, YouTube (with transcripts), X/Twitter, app store, and API endpoint data for **yesterday** (default). Uses daily cache — re-runs are free.
 
 ### 1b. Run Scoring Engine
 ```bash
@@ -92,18 +94,18 @@ Write 3-5 sentences covering the day's most important developments. Mention the 
 
 ## Step 6: Write Obsidian Daily Note
 
-Write to: `{vault_path}/{daily_folder}/{today_date}.md`
+Write to: `{vault_path}/{daily_folder}/{target_date}.md`
 
 ```markdown
 ---
-date: {today_date}
+date: {target_date}
 type: daily-digest
 tags: [daily-digest, {top_tags}]
 sources_ok: [{list}]
 sources_failed: [{list}]
 ---
 
-# Daily Knowledge Digest — {today_date}
+# Daily Knowledge Digest — {target_date}
 
 ## Executive Summary
 {3-5 sentences, mention strongest signal + velocity}
@@ -125,7 +127,7 @@ sources_failed: [{list}]
 
 ### {idea_title}
 - **Category**: app / saas / baas / gaming / dev-tools
-- **Inspired by**: [[{today_date}#{topic_name}]] | [{source_title}]({url})
+- **Inspired by**: [[{target_date}#{topic_name}]] | [{source_title}]({url})
 - **Market gap**: {what's missing}
 - **App store gap**: {gap analysis result}
 - **Difficulty**: low / medium / high
@@ -187,13 +189,13 @@ For each video with transcript, show the 5-bullet summary:
 ## Step 7: Write Idea Notes (up to 3)
 
 For the **top 3 signals with score >= 70**, create separate idea notes at:
-`{vault_path}/{ideas_folder}/idea-{today_date}-{slug}.md`
+`{vault_path}/{ideas_folder}/idea-{target_date}-{slug}.md`
 
 Each must target a **different market category**.
 
 ```markdown
 ---
-date: {today_date}
+date: {target_date}
 type: idea
 category: {app/saas/baas/gaming/dev-tools}
 signal_score: {score}
@@ -222,8 +224,8 @@ tags: [idea, {category}, {related_tags}]
 - **Revenue model**: {how it makes money}
 
 ## Related
-- Daily digest: [[{today_date}]]
-- Signal: [[{today_date}#{topic_name}]]
+- Daily digest: [[{target_date}]]
+- Signal: [[{target_date}#{topic_name}]]
 - Sources: [{title1}]({url1}), [{title2}]({url2})
 ```
 
@@ -235,7 +237,7 @@ Check `config.yaml` → `email`. If `enabled: true`, send a summary email using:
 cd <project_root> && .venv/bin/python -c "
 from src.email_sender import send_digest_summary
 send_digest_summary(
-    date='{today_date}',
+    date='{target_date}',
     executive_summary='{executive_summary}',
     trending_topics=[
         {'emoji': '{emoji}', 'name': '{topic}', 'score': {score}, 'velocity': '{velocity}', 'sources': '{sources}'},

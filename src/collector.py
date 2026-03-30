@@ -93,9 +93,14 @@ def collect_all(categories: List[str] = None, force: bool = False) -> List[Conte
 def main():
     import argparse
     parser = argparse.ArgumentParser(description="Daily Knowledge Builder - Collector")
-    parser.add_argument("--test", type=str, help="Test a specific category (reddit, youtube, twitter, app_stores)")
+    parser.add_argument("--test", type=str, help="Test a specific category (reddit, youtube, twitter, app_stores, api_endpoints)")
     parser.add_argument("--force", action="store_true", help="Ignore cache and re-fetch all sources")
+    parser.add_argument("--date", type=str, default=None, help="Target date (YYYY-MM-DD). Defaults to yesterday. Use 'today' for today.")
     args = parser.parse_args()
+
+    if args.date:
+        from src.cache import set_target_date
+        set_target_date(args.date)
 
     categories = [args.test] if args.test else None
     items = collect_all(categories, force=args.force)

@@ -9,7 +9,7 @@ import yaml
 from collections import defaultdict
 from datetime import date, timedelta
 from typing import List, Optional
-from src.cache import get_history, get_cached, list_cached_days
+from src.cache import get_history, get_cached, list_cached_days, get_target_date
 from src.models.content import ContentItem
 
 STOPWORDS = {
@@ -193,7 +193,7 @@ def compute_velocity(days: int = 7) -> List[dict]:
     if len(cached_days) < 1:
         return []
 
-    today = str(date.today())
+    today = get_target_date()
 
     # Load all items per day
     daily_topics = {}  # {day: {topic_keywords_frozen: {sources, titles, max_score}}}
@@ -375,14 +375,19 @@ def main():
     import argparse
     parser = argparse.ArgumentParser(description="Signal Hunter — Scoring Engine")
     parser.add_argument("--weekly", action="store_true", help="Output weekly aggregate instead of daily velocity")
+    parser.add_argument("--date", type=str, default=None, help="Target date (YYYY-MM-DD). Defaults to yesterday. Use 'today' for today.")
     args = parser.parse_args()
+
+    if args.date:
+        from src.cache import set_target_date
+        set_target_date(args.date)
 
     if args.weekly:
         result = compute_weekly_aggregate()
     else:
         result = {
             "velocity": compute_velocity(),
-            "date": str(date.today()),
+            "date": get_target_date(),
         }
 
     json.dump(result, sys.stdout, indent=2, default=str)

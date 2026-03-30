@@ -20,6 +20,7 @@ Run `/setup` to get started, or manually:
 - `/setup` — Guided first-time setup
 
 ## Quick Commands
+All commands default to **yesterday's date** (full 24h of data). Add `--date YYYY-MM-DD` or `--date today` to override.
 - Run collector: `.venv/bin/python -m src.collector`
 - Run scoring: `.venv/bin/python -m src.scoring` (daily velocity)
 - Run weekly scoring: `.venv/bin/python -m src.scoring --weekly`
