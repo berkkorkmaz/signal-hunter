@@ -48,7 +48,7 @@ def collect_twitter(config: dict, force: bool = False) -> List[ContentItem]:
     handles = [h["handle"] for h in config.get("sources", {}).get("twitter", [])]
     if not handles:
         return []
-    return _collect_with_cache("twitter", lambda: TwitterScraper(handles).safe_fetch(), force)
+    return _collect_with_cache("twitter", lambda: TwitterScraper(handles, limit=100).safe_fetch(), force)
 
 
 def collect_app_stores(config: dict, force: bool = False) -> List[ContentItem]:

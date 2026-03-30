@@ -32,15 +32,29 @@ Read `config.yaml` → `sources.webfetch`. For each URL, use WebFetch to extract
 
 ## Step 3: Fetch Email Newsletters via Gmail MCP
 
-Check `config.yaml` → `sources.gmail`. If `auto_discover: true`:
-```
-gmail_search_messages with q: "unsubscribe" newer_than:1d category:updates
-```
+**IMPORTANT**: Newsletters are the highest-signal source. Do NOT skip any. Use multiple searches to ensure full coverage.
 
-For each newsletter (filter out promotional/transactional emails):
+### 3a. Search for known high-priority newsletters FIRST (never miss these):
+```
+gmail_search_messages with q: "from:theneuron newer_than:1d" maxResults: 5
+gmail_search_messages with q: "from:aisecret newer_than:1d" maxResults: 5
+```
+Read every result from these priority senders with `gmail_read_message`.
+
+### 3b. Then auto-discover other newsletters:
+```
+gmail_search_messages with q: "unsubscribe newer_than:1d category:updates" maxResults: 100
+```
+Filter out promotional/transactional emails (Uber, Substack notifications, Reddit digests, etc.). Read the remaining AI/tech newsletters.
+
+### 3c. Also check explicit senders from config:
+Check `config.yaml` → `sources.gmail.explicit_senders` for any additional senders to search.
+
+For each newsletter:
 - Read with `gmail_read_message`
 - Extract key AI/tech/business content
 - **IMPORTANT**: Note which topics/projects are mentioned in newsletters — newsletter mentions are a strong curation signal for trend scoring
+- The Neuron gets 1.5x scoring weight — always read it thoroughly
 
 ## Step 4: Read Historical Notes (velocity context)
 
