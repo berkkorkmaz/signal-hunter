@@ -161,7 +161,7 @@ sources_failed: [{list}]
 {numbered list: [title](url) — {points} pts | {comments} comments}
 
 ### Product Hunt (Top 10)
-{**name** — tagline — {upvotes} upvotes}
+{[**name**](https://www.producthunt.com/products/{slug}) — tagline — {upvotes} upvotes}
 
 ### GitHub Trending (Top 15)
 {[owner/repo](url) — {stars} stars today — {description}}
@@ -180,7 +180,7 @@ For each video with transcript, show the 5-bullet summary:
 {- Bullet point 2...}
 
 ### X/Twitter (Last 48h)
-{[@handle] "{tweet text}" — {likes} likes — [link](url)}
+{[@handle](https://x.com/{handle}) "{tweet text}" — {likes} likes — [link](https://x.com/{handle}/status/{tweet_id})}
 
 ### Email Newsletters
 {#### {sender} — "{subject}"}
