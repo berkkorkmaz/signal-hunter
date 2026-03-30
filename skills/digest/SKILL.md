@@ -62,7 +62,12 @@ Find topics appearing in **2+ different sources**. Use the scoring output from S
 - **+15 bonus** if topic is also mentioned in a newsletter (newsletters are human-curated, strong signal)
 - Use velocity data: 🔥 accelerating, 🆕 new, 📉 fading, ➡️ steady
 
-**Rank all trending topics by their final score.**
+**Cross-day deduplication:** The scoring engine outputs a `freshness` field for each topic:
+- **`fresh`** — first time this topic appeared. Always include.
+- **`deepened`** — topic appeared before BUT has new sources, new details, or a 2x+ score jump. Include it, but focus on **what's new** (e.g. "TechCrunch explains WHY Sora was killed" not just "Sora was killed again").
+- **`repeat`** — same story rehashed with no meaningful new info. **SKIP these entirely** from Trending Topics. Do not mention them in the executive summary either.
+
+**Rank all trending topics by their final score (after filtering out repeats).**
 
 ### 5b) Business Idea Extraction
 For the **top signals with score >= 70**, generate up to **3 business ideas**. Each idea MUST target a different market category:
@@ -114,6 +119,7 @@ sources_failed: [{list}]
 
 ### {velocity_emoji} {topic_name}
 - **Score**: {score}/100
+- **Freshness**: {fresh | deepened} — {if deepened: "New angle: ..." explaining what's new vs yesterday}
 - **Velocity**: {velocity_label} (first seen: {date}, {days_active} days active)
 - **Seen in**: {source1}, {source2}, {source3}...
 - **Sources**: [{source1_title}]({url1}), [{source2_title}]({url2}), ...

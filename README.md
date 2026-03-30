@@ -164,8 +164,9 @@ The system catches emerging signals early by combining multiple detection method
 2. **Tiered cross-source multiplier** (1.3x for 2 sources, 1.5x for 3+) to reward true convergence
 3. **Newsletter mention bonus** (+15) because human-curated newsletters are strong signal amplifiers
 4. **Velocity tracking** against 7 days of cached data
-5. **App store gap detection** to find market opportunities
-6. **Weekly rollups** categorizing persistent trends, flash signals, and rising topics
+5. **Cross-day deduplication** — each topic is marked `fresh`, `deepened` (new angle/sources), or `repeat` (same story, skipped). Only genuinely new or evolved stories surface in the digest.
+6. **App store gap detection** to find market opportunities
+7. **Weekly rollups** categorizing persistent trends, flash signals, and rising topics
 
 ## License
 

@@ -233,6 +233,9 @@ def compute_velocity(days: int = 7) -> List[dict]:
         first_seen = today
         days_active = 1
         prev_source_counts = []
+        prev_titles = set()
+        prev_sources = set()
+        prev_max_score = 0
 
         for prev_day in sorted(previous_days):
             if prev_day not in daily_topics:
@@ -244,6 +247,9 @@ def compute_velocity(days: int = 7) -> List[dict]:
                         first_seen = prev_day
                     days_active += 1
                     prev_source_counts.append(len(prev_data["sources"]))
+                    prev_titles.update(prev_data["titles"])
+                    prev_sources.update(prev_data["sources"])
+                    prev_max_score = max(prev_max_score, prev_data["max_score"])
                     break
 
         today_count = len(today_data["sources"])
@@ -268,6 +274,31 @@ def compute_velocity(days: int = 7) -> List[dict]:
             velocity = "new"
             emoji = "🆕"
 
+        # Cross-day dedup: determine if this topic has genuinely new info
+        # vs being the same news repeated across days.
+        # "fresh" = first time seen
+        # "deepened" = same topic but new sources, new titles, or score jumped 2x+
+        # "repeat" = same story rehashed, no meaningful new info — skip in outputs
+        if days_active == 1:
+            freshness = "fresh"
+        else:
+            new_sources = set(today_data["sources"]) - prev_sources
+            # Check if today's titles bring new keywords not in previous titles
+            today_title_kw = set()
+            for t in today_data["titles"]:
+                today_title_kw |= _extract_keywords(t)
+            prev_title_kw = set()
+            for t in prev_titles:
+                prev_title_kw |= _extract_keywords(t)
+            new_keywords = today_title_kw - prev_title_kw
+            score_jumped = (prev_max_score > 0 and
+                           today_data["max_score"] / prev_max_score >= 2.0)
+
+            if new_sources or len(new_keywords) >= 3 or score_jumped:
+                freshness = "deepened"
+            else:
+                freshness = "repeat"
+
         velocities.append({
             "topic": today_data["titles"][0],  # representative title
             "keywords": list(kw_set)[:10],
@@ -278,10 +309,13 @@ def compute_velocity(days: int = 7) -> List[dict]:
             "source_count_today": today_count,
             "sources_today": list(today_data["sources"]),
             "max_score": today_data["max_score"],
+            "freshness": freshness,
         })
 
-    # Sort by source count (strongest signals first)
-    velocities.sort(key=lambda v: (-v["source_count_today"], -v["max_score"]))
+    # Sort: fresh/deepened first, then by source count and score. Repeats sink to bottom.
+    freshness_rank = {"fresh": 0, "deepened": 1, "repeat": 2}
+    velocities.sort(key=lambda v: (freshness_rank.get(v.get("freshness", "fresh"), 0),
+                                   -v["source_count_today"], -v["max_score"]))
     return velocities
 
 

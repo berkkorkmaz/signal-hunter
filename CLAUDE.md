@@ -39,6 +39,7 @@ All commands default to **yesterday's date** (full 24h of data). Add `--date YYY
 - Daily cache in `.cache/{date}/` avoids re-fetching and preserves history
 - Scoring: 0-100 normalized scores, tiered cross-source multiplier (1.3x for 2 sources, 1.5x for 3+), +15 newsletter mention bonus
 - Velocity: 🔥 accelerating, 🆕 new, 📉 fading, ➡️ steady (compared across 7 days)
+- Freshness dedup: topics marked `fresh`, `deepened` (new angle), or `repeat` (skip) across days
 - App store gap detection: auto-check if trending topic has existing apps
 - YouTube transcripts: summarized to 5 bullet points (not raw dump)
 - Up to 3 idea notes per day for signals scoring >= 70
