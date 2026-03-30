@@ -120,11 +120,14 @@ def send_full_digest(
     for idea in ideas:
         cc = cat_colors.get(idea.get("category", ""), "#2563eb")
         ideas_html += f"""
-        <div style="padding:14px 16px;margin-bottom:10px;background:#f8fafc;border-radius:8px;border-left:4px solid {cc};">
+        <div style="padding:14px 16px;margin-bottom:12px;background:#f8fafc;border-radius:8px;border-left:4px solid {cc};">
             <div style="font-size:14px;font-weight:600;color:#0f172a;margin-bottom:3px;">{idea.get('title','')}</div>
-            <div style="font-size:11px;color:{cc};font-weight:600;margin-bottom:6px;">{idea.get('category','')} &middot; {idea.get('score','')}/100</div>
-            <div style="font-size:12px;color:#475569;line-height:1.55;">{idea.get('gap','')}</div>
-            <div style="font-size:12px;color:#334155;margin-top:4px;line-height:1.55;">{idea.get('next_step','')}</div>
+            <div style="font-size:11px;color:{cc};font-weight:600;margin-bottom:8px;">{idea.get('category','')} &middot; {idea.get('score','')}/100</div>
+            <div style="font-size:12px;color:#475569;line-height:1.6;margin-bottom:6px;">{idea.get('problem','')}</div>
+            <div style="font-size:12px;color:#475569;line-height:1.6;margin-bottom:6px;">{idea.get('gap','')}</div>
+            <div style="font-size:12px;color:#475569;line-height:1.6;margin-bottom:6px;">{idea.get('how','')}</div>
+            <div style="font-size:12px;color:#334155;line-height:1.6;"><strong>Next step:</strong> {idea.get('next_step','')}</div>
+            <div style="font-size:11px;color:#64748b;margin-top:4px;">{idea.get('revenue','')}</div>
         </div>"""
 
     # ── Source sections ──

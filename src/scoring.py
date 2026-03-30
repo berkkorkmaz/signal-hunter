@@ -88,7 +88,9 @@ def normalize_score(item: ContentItem, weights: dict) -> float:
     elif category == "app_stores":
         normalized = weights.get("app_stores", {}).get("default", 30)
     elif category == "gmail" or "newsletter" in source_lower:
-        normalized = weights.get("gmail", {}).get("default", 70)
+        base = weights.get("gmail", {}).get("default", 70)
+        # The Neuron has stronger curation — score higher than generic newsletters
+        normalized = base * 1.2 if "neuron" in source_lower else base
     elif category == "api_endpoints":
         normalized = weights.get("api_endpoints", {}).get("default", 45)
     else:
@@ -175,9 +177,13 @@ def apply_cross_source_multiplier(
             elif source_count == 2:
                 base_score *= (1 + (multiplier - 1) * 0.6)  # e.g. 1.3x when multiplier=1.5
 
-            # Newsletter mention bonus
+            # Newsletter mention bonus — tiered by newsletter quality
+            # Premium newsletters (human-curated, high signal) get higher bonus
             if mentioned_in_newsletter:
-                base_score += newsletter_bonus
+                has_premium = any(
+                    "neuron" in s.lower() for s in newsletter_sources
+                )
+                base_score += newsletter_bonus * (1.5 if has_premium else 1.0)
                 item.extra["mentioned_in_newsletters"] = newsletter_sources
 
             item.extra["normalized_score"] = max(1, min(100, base_score))

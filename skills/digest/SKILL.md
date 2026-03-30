@@ -250,8 +250,17 @@ send_digest_summary(
         # ... for each trending topic
     ],
     ideas=[
-        {'title': '{idea_title}', 'category': '{category}', 'score': {score}},
-        # ... for each idea
+        {
+            'title': '{idea_title}',
+            'category': '{category}',
+            'score': {score},
+            'problem': '{1-2 sentences: what problem exists and why now}',
+            'gap': '{1 sentence: what market gap this fills}',
+            'how': '{1-2 sentences: how the product would work}',
+            'next_step': '{concrete first action to validate}',
+            'revenue': '{revenue model in one line}',
+        },
+        # ... for each idea (5-7 sentences total per idea)
     ],
     to={recipients_from_config_or_None},
 )
