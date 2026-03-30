@@ -115,7 +115,7 @@ email:
     - your-group@googlegroups.com
 
 # Output directory — any folder works, Obsidian is optional
-output:
+obsidian:
   vault_path: ~/Documents/signal-hunter-output
   daily_folder: Daily
   ideas_folder: Ideas

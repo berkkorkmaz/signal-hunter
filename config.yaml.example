@@ -88,7 +88,7 @@ email:
 # Output directory for daily notes, ideas, and weekly rollups.
 # Works with any folder — Obsidian is optional.
 # If you use Obsidian, point this to your vault path.
-output:
+obsidian:
   vault_path: ~/Documents/signal-hunter-output
   daily_folder: Daily
   ideas_folder: Ideas
