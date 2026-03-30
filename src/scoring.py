@@ -1,6 +1,7 @@
 """Scoring engine: normalize scores across sources, detect cross-source signals,
 track velocity across days, and factor in newsletter mentions."""
 import json
+import math
 import os
 import re
 import string
@@ -22,6 +23,12 @@ STOPWORDS = {
     "that", "this", "it", "its", "i", "we", "you", "he", "she", "they",
     "what", "which", "who", "how", "when", "where", "why", "all", "each",
     "new", "now", "up", "out", "also", "more", "first", "get", "one",
+}
+
+DOMAIN_TERMS = {
+    "ai", "ml", "llm", "agi", "nlp", "gpt", "mcp", "rl", "cv",
+    "ar", "vr", "xr", "os", "ui", "ux", "db", "ip", "vm",
+    "api", "sdk", "saas", "rag", "lora", "rlhf", "gpu", "tpu",
 }
 
 
@@ -50,12 +57,31 @@ def load_scoring_config() -> dict:
     })
 
 
+_RELEVANCE_KEYWORDS = None
+
+def _get_relevance_keywords() -> dict:
+    """Load relevance keyword lists from config (cached)."""
+    global _RELEVANCE_KEYWORDS
+    if _RELEVANCE_KEYWORDS is None:
+        config = load_scoring_config()
+        _RELEVANCE_KEYWORDS = config.get("relevance_keywords", {})
+    return _RELEVANCE_KEYWORDS
+
+
 def _extract_keywords(text: str) -> set:
-    """Extract meaningful keywords from text for matching."""
+    """Extract meaningful keywords + bigrams from text for matching."""
     text = text.lower()
     text = text.translate(str.maketrans("", "", string.punctuation))
-    words = set(text.split()) - STOPWORDS
-    return {w for w in words if len(w) > 2}
+    words = text.split()
+    word_set = set(words) - STOPWORDS
+    filtered = {w for w in word_set if len(w) > 2 or w in DOMAIN_TERMS}
+    # Bigrams for compound concepts (open_source, code_generation, etc.)
+    bigrams = set()
+    for i in range(len(words) - 1):
+        a, b = words[i], words[i + 1]
+        if a not in STOPWORDS and b not in STOPWORDS and len(a) > 1 and len(b) > 1:
+            bigrams.add(f"{a}_{b}")
+    return filtered | bigrams
 
 
 def _jaccard_similarity(set_a: set, set_b: set) -> float:
@@ -68,38 +94,52 @@ def _jaccard_similarity(set_a: set, set_b: set) -> float:
 
 
 def normalize_score(item: ContentItem, weights: dict) -> float:
-    """Normalize a ContentItem's raw score to 0-100 based on source type."""
+    """Normalize a ContentItem's raw score to 0-100 based on source type.
+    Uses log-scale for engagement metrics: 10->33, 100->66, 1000->100."""
     raw = item.score or 0
     source_lower = item.source.lower()
     category = item.category
 
-    # Determine which weight config to use
+    def _log_scale(value: int) -> float:
+        return 33.0 * math.log10(max(value, 1)) if value > 0 else 0.0
+
     if category == "reddit":
-        divisor = weights.get("reddit", {}).get("divisor", 5)
-        normalized = raw / divisor
+        normalized = _log_scale(raw)
     elif "hackernews" in source_lower or "hn" in source_lower:
-        divisor = weights.get("hackernews", {}).get("divisor", 10)
-        normalized = raw / divisor
+        normalized = _log_scale(raw)
     elif category == "youtube":
         normalized = weights.get("youtube", {}).get("default", 50)
     elif category == "twitter":
-        divisor = weights.get("twitter", {}).get("divisor", 2)
-        normalized = raw / divisor
+        normalized = _log_scale(raw)
     elif category == "app_stores":
         normalized = weights.get("app_stores", {}).get("default", 30)
     elif category == "gmail" or "newsletter" in source_lower:
         base = weights.get("gmail", {}).get("default", 70)
-        # The Neuron has stronger curation — score higher than generic newsletters
         normalized = base * 1.2 if "neuron" in source_lower else base
     elif category == "api_endpoints":
         normalized = weights.get("api_endpoints", {}).get("default", 45)
     else:
-        # GitHub trending or other webfetch sources
         if item.extra.get("stars_today"):
-            divisor = weights.get("github", {}).get("divisor", 50)
-            normalized = item.extra["stars_today"] / divisor
+            normalized = _log_scale(item.extra["stars_today"])
         else:
-            normalized = raw / 10 if raw else 30
+            normalized = _log_scale(raw) if raw else 30
+
+    # Builder relevance adjustment
+    rk = _get_relevance_keywords()
+    if rk:
+        text_lower = f"{item.title} {item.description or ''}".lower()
+        for term in rk.get("boost_high", []):
+            if term in text_lower:
+                normalized += 15
+                break
+        for term in rk.get("boost_low", []):
+            if term in text_lower:
+                normalized += 10
+                break
+        for term in rk.get("dampener", []):
+            if term in text_lower:
+                normalized -= 10
+                break
 
     return max(1, min(100, normalized))
 
@@ -157,7 +197,17 @@ def apply_cross_source_multiplier(
     # Score each item
     for group_indices, group_keywords in groups:
         sources_in_group = {items[i].category for i in group_indices}
-        source_count = len(sources_in_group)
+        # Within-category breadth: 3+ subreddits or 5+ twitter handles = extra source
+        category_subsources = defaultdict(set)
+        for idx in group_indices:
+            category_subsources[items[idx].category].add(items[idx].source)
+        effective_count = len(sources_in_group)
+        for cat, subs in category_subsources.items():
+            if cat == "reddit" and len(subs) >= 3:
+                effective_count += 1
+            elif cat == "twitter" and len(subs) >= 5:
+                effective_count += 1
+        source_count = effective_count
 
         # Check newsletter mentions for this topic
         mentioned_in_newsletter = False
@@ -298,9 +348,9 @@ def compute_velocity(days: int = 7) -> List[dict]:
                 prev_title_kw |= _extract_keywords(t)
             new_keywords = today_title_kw - prev_title_kw
             score_jumped = (prev_max_score > 0 and
-                           today_data["max_score"] / prev_max_score >= 2.0)
+                           today_data["max_score"] / prev_max_score >= 1.3)
 
-            if new_sources or len(new_keywords) >= 3 or score_jumped:
+            if new_sources or len(new_keywords) >= 2 or score_jumped:
                 freshness = "deepened"
             else:
                 freshness = "repeat"

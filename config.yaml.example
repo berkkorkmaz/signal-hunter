@@ -72,6 +72,28 @@ scoring:
     app_stores: { default: 30 }    # no engagement data
     gmail: { default: 70 }         # newsletter mention = strong signal
     api_endpoints: { default: 45 } # structured API data, medium-high signal
+  relevance_keywords:
+    boost_high:    # +15 points — builder-relevant signals
+      - "open source"
+      - "open-source"
+      - "api"
+      - "sdk"
+      - "launch"
+      - "release"
+      - "self-hosted"
+    boost_low:     # +10 points
+      - "pricing"
+      - "integration"
+      - "plugin"
+      - "framework"
+      - "beta"
+      - "developer"
+      - "devtools"
+    dampener:      # -10 points — noise
+      - "meme"
+      - "lol"
+      - "vibe"
+      - "shitpost"
   cross_source_multiplier: 1.5     # tiered: 1.3x for 2 sources, full 1.5x for 3+
   newsletter_mention_bonus: 15     # bonus if topic also appears in newsletters
   velocity:
