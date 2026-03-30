@@ -268,3 +268,33 @@ send_digest_summary(
 ```
 
 If `recipients` is empty, it sends to self. If it contains a Google Group address (e.g. `signal-hunter@googlegroups.com`), all group members receive it.
+
+## Step 9: Save Digest Data for Substack Publishing
+
+After sending the email, save the full digest data so `/publish` can generate the Substack HTML later:
+
+```bash
+cd <project_root> && .venv/bin/python -c "
+from src.substack_publisher import save_digest_data
+save_digest_data(
+    date='{target_date}',
+    executive_summary='{executive_summary}',
+    trending_topics=[...],  # same data as email
+    hackernews=[...],
+    producthunt=[...],
+    github_trending=[...],
+    huggingface=[...],
+    reddit=[...],
+    youtube=[...],
+    twitter=[...],
+    newsletters=[...],
+    smolai=[...],
+    api_tools=[...],
+    source_status=[...],
+    ideas=[...],  # included in save but stripped by /publish
+    to={recipients},
+)
+"
+```
+
+This saves to `.cache/digest-{date}.json`. The user can then run `/publish` or `.venv/bin/python -m src.substack_publisher` to generate Substack-ready HTML (without business ideas).

@@ -8,3 +8,6 @@ config.yaml
 .substack_cookies.json
 .claude/scheduled_tasks.lock
 .claude/settings.local.json
+.claude/skills/publish.md
+skills/publish/
+src/substack_publisher.py

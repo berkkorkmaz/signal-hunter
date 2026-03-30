@@ -1,5 +1,5 @@
 sources:
-  webfetch:
+
     - url: https://news.ycombinator.com/news
       name: HackerNews
     - url: https://www.producthunt.com/

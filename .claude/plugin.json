@@ -1,8 +1,8 @@
 {
   "name": "signal-hunter",
   "displayName": "Signal Hunter",
-  "description": "AI-powered daily trend hunter. Aggregates 15+ sources, scores cross-source signals with newsletter mention tracking and velocity detection, generates Obsidian notes with business ideas and sends email digests.",
-  "version": "2.1.0",
+  "description": "AI-powered daily trend hunter. Aggregates 20+ sources, scores cross-source signals with newsletter mention tracking, velocity detection, and cross-day dedup. Generates Obsidian notes with business ideas, sends email digests, and publishes to Substack.",
+  "version": "2.2.0",
   "author": "berkkorkmaz",
   "skills": [
     ".claude/skills/digest.md",
