@@ -180,6 +180,8 @@ For each video with transcript, show the 5-bullet summary:
 {- Bullet point 2...}
 
 ### X/Twitter (Last 48h)
+**IMPORTANT**: Do NOT only show the highest-engagement viral tweets. Include the **most substantive tweet from each active handle** (even if it has low likes). A researcher's 7-like insight is more valuable than a 2000-like meme. Group by handle, show 1-2 best tweets per handle, sorted by relevance not engagement.
+
 {[@handle](https://x.com/{handle}) "{tweet text}" — {likes} likes — [link](https://x.com/{handle}/status/{tweet_id})}
 
 ### Email Newsletters
