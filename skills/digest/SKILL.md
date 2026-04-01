@@ -93,13 +93,15 @@ For the **top signals with score >= 70**, generate up to **3 business ideas**. E
 
 If fewer than 3 signals qualify, create as many as do. Never create two ideas in the same category.
 
-### 5c) App Store Gap Detection
+### 5c) App Store Gap Detection (Validated)
 For each trending topic with score >= 60:
 1. Extract 2-3 keywords from the topic
 2. Search the collected app_stores data for items whose titles contain those keywords
-3. If **no matching apps found** → flag as **"🟢 GAP DETECTED — no existing app/tool"**
-4. If **matching apps found** → note as **"🔴 Existing: {app names}"**
-5. Gaps are stronger signals for new product opportunities — mention this in the business idea
+3. **VALIDATION STEP**: Use WebSearch to verify the gap is real — search for `"{topic keywords}" app OR tool OR platform` to check if existing products/tools already cover this space. Include open-source projects, SaaS tools, and browser extensions — not just app store listings.
+4. If **no matching apps/tools found after web search** → flag as **"🟢 GAP DETECTED — no existing app/tool"**
+5. If **matching apps/tools found** → note as **"🔴 Existing: {app/tool names}"** with brief description
+6. Be conservative: if a credible product exists in the space (even if imperfect), mark as 🔴 Existing, not 🟢 GAP
+7. Gaps are stronger signals for new product opportunities — mention this in the business idea
 
 ### 5d) Transcript Summarization
 For each YouTube video that has a transcript (`raw_text`):
@@ -262,8 +264,8 @@ send_digest_summary(
     date='{target_date}',
     executive_summary='{executive_summary}',
     trending_topics=[
-        {'emoji': '{emoji}', 'name': '{topic}', 'score': {score}, 'velocity': '{velocity}', 'sources': '{sources}'},
-        # ... for each trending topic
+        {'emoji': '{emoji}', 'name': '{topic}', 'score': {score}, 'velocity': '{velocity}', 'sources': '{sources}', 'summary': '{1-2 sentence explanation of what happened and why it matters}', 'gap': '{🟢 GAP DETECTED — ... | 🔴 Existing: app names}'},
+        # ... for each trending topic — ALWAYS include 'summary' AND 'gap' fields
     ],
     ideas=[
         {
@@ -278,6 +280,42 @@ send_digest_summary(
         },
         # ... for each idea (5-7 sentences total per idea)
     ],
+    hackernews=[
+        {'title': '{title}', 'url': '{url}', 'score': '{points} pts', 'extra': '{comments} comments'},
+        # ... top 15 HN items
+    ],
+    producthunt=[
+        {'title': '{name}', 'url': '{ph_url}', 'extra': '{tagline}'},
+        # ... top 8 PH items
+    ],
+    github_trending=[
+        {'title': '{owner/repo}', 'url': '{url}', 'score': '{stars_today} ★/day', 'extra': '{description}'},
+        # ... top 10 GitHub trending repos
+    ],
+    huggingface=[
+        {'title': '{paper_title}', 'url': '{url}', 'score': '{likes} likes', 'extra': '{authors}'},
+        # ... top 5 HF papers
+    ],
+    reddit=[
+        {'title': '{title}', 'url': '{url}', 'score': '{score} pts', 'extra': 'r/{subreddit} · {comments} comments'},
+        # ... top 10 Reddit posts
+    ],
+    twitter=[
+        {'handle': '{handle}', 'likes': '{likes}', 'text': '{tweet_text_max_180_chars}'},
+        # ... 1-2 best tweets per active handle
+    ],
+    newsletters=[
+        {'sender': '{sender_name}', 'subject': '{subject}', 'takeaways': '{key takeaways as short sentence}'},
+        # ... all newsletters read
+    ],
+    smolai=[
+        {'title': '{headline}'},
+        # ... smol.ai items
+    ],
+    source_status=[
+        {'name': '{source}', 'status': 'OK', 'items': {count}},
+        # ... all sources
+    ],
     to={recipients_from_config_or_None},
 )
 "
@@ -289,25 +327,27 @@ If `recipients` is empty, it sends to self. If it contains a Google Group addres
 
 After sending the email, save the full digest data so `/publish` can generate the Substack HTML later:
 
+**IMPORTANT**: Pass the EXACT same data as Step 8 (email). The `save_digest_data` call must be identical to `send_digest_summary` — same trending_topics (with `summary`), same source sections, same key names. The only addition is `ideas` (included in save but stripped by `/publish`).
+
 ```bash
 cd <project_root> && .venv/bin/python -c "
 from src.substack_publisher import save_digest_data
 save_digest_data(
     date='{target_date}',
     executive_summary='{executive_summary}',
-    trending_topics=[...],  # same data as email
-    hackernews=[...],
-    producthunt=[...],
-    github_trending=[...],
-    huggingface=[...],
-    reddit=[...],
-    youtube=[...],
-    twitter=[...],
-    newsletters=[...],
-    smolai=[...],
+    trending_topics=[...],  # EXACT same list as email — must include 'summary' field
+    hackernews=[...],       # EXACT same list as email
+    producthunt=[...],      # EXACT same list as email
+    github_trending=[...],  # EXACT same list as email
+    huggingface=[...],      # EXACT same list as email
+    reddit=[...],           # EXACT same list as email
+    youtube=[...],          # EXACT same list as email
+    twitter=[...],          # EXACT same list as email
+    newsletters=[...],      # EXACT same list as email — must include 'takeaways'
+    smolai=[...],           # EXACT same list as email
     api_tools=[...],
-    source_status=[...],
-    ideas=[...],  # included in save but stripped by /publish
+    source_status=[...],    # EXACT same list as email
+    ideas=[...],            # included in save but stripped by /publish
     to={recipients},
 )
 "
