@@ -53,24 +53,6 @@ def send_email(subject, body_html, to=None, body_text=None):
         return False
 
 
-def _li(items, numbered=False):
-    """Build simple list items."""
-    html = ""
-    for i, item in enumerate(items):
-        title = item.get("title", "")
-        url = item.get("url", "")
-        score = item.get("score", "")
-        extra = item.get("extra", "")
-        num = f"{i+1}. " if numbered else ""
-        link = f'<a href="{url}" style="color:#2563eb;text-decoration:none;">{title}</a>' if url else title
-        meta_parts = [str(score)] if score else []
-        if extra:
-            meta_parts.append(str(extra))
-        meta = f' <span style="color:#9ca3af;font-size:12px;">— {" · ".join(meta_parts)}</span>' if meta_parts else ""
-        html += f'<div style="padding:5px 0;font-size:13px;line-height:1.5;">{num}{link}{meta}</div>\n'
-    return html
-
-
 def send_full_digest(
     date="",
     executive_summary="",
@@ -86,150 +68,64 @@ def send_full_digest(
     newsletters=None,
     smolai=None,
     app_charts=None,
+    api_tools=None,
     source_status=None,
     to=None,
+    **_ignored,
 ):
+    from src.substack_publisher import (
+        _build_trending_html, _build_ideas_html, _build_sections,
+    )
+
     trending_topics = trending_topics or []
     ideas = ideas or []
 
-    # Brand colors — blue palette from logo
-    C = "#2563eb"    # electric blue (primary)
-    C2 = "#1e40af"   # deep blue (headings)
-    CL = "#3b82f6"   # lighter blue (accents)
-    CB = "#eff6ff"   # blue tint background
+    C2 = "#1e40af"
 
-    # ── Trending Topics ──
-    topics_html = ""
-    for t in trending_topics:
-        score = t.get("score", 0)
-        sc = "#1e40af" if score >= 80 else "#3b82f6" if score >= 60 else "#94a3b8"
-        topics_html += f"""
-        <div style="padding:16px;margin-bottom:10px;background:{CB};border-radius:8px;border-left:4px solid {sc};">
-            <div style="font-size:15px;font-weight:600;color:#0f172a;margin-bottom:5px;">{t.get('emoji','')} {t.get('name','')}</div>
-            <div style="font-size:11px;color:{sc};font-weight:600;margin-bottom:8px;">{score}/100 &middot; {t.get('velocity','')}{(' &middot; ' + t.get('days','')) if t.get('days') else ''}</div>
-            <div style="font-size:13px;color:#334155;line-height:1.65;margin-bottom:8px;">{t.get('summary','')}</div>
-            <div style="font-size:11px;color:#64748b;line-height:1.5;">
-                {t.get('sources','')}{(' &middot; via ' + t.get('newsletters','')) if t.get('newsletters') else ''}
-            </div>
-            {'<div style="font-size:11px;color:#059669;font-weight:500;margin-top:5px;">' + t.get('gap','') + '</div>' if t.get('gap') else ''}
-        </div>"""
+    topics_html = _build_trending_html(trending_topics)
+    ideas_html = _build_ideas_html(ideas)
+    sections = _build_sections(
+        hackernews=hackernews, producthunt=producthunt,
+        github_trending=github_trending, huggingface=huggingface,
+        reddit=reddit, youtube=youtube, twitter=twitter,
+        newsletters=newsletters, smolai=smolai, api_tools=api_tools,
+        app_charts=app_charts, source_status=source_status,
+    )
 
-    # ── Ideas ──
-    ideas_html = ""
-    cat_colors = {"SaaS": "#2563eb", "saas": "#2563eb", "Dev-tools": "#0891b2", "dev-tools": "#0891b2", "Mobile App": "#7c3aed", "App": "#7c3aed", "app": "#7c3aed", "BaaS": "#d97706", "Gaming": "#ea580c"}
-    for idea in ideas:
-        cc = cat_colors.get(idea.get("category", ""), "#2563eb")
-        ideas_html += f"""
-        <div style="padding:14px 16px;margin-bottom:12px;background:#f8fafc;border-radius:8px;border-left:4px solid {cc};">
-            <div style="font-size:14px;font-weight:600;color:#0f172a;margin-bottom:3px;">{idea.get('title','')}</div>
-            <div style="font-size:11px;color:{cc};font-weight:600;margin-bottom:8px;">{idea.get('category','')} &middot; {idea.get('score','')}/100</div>
-            <div style="font-size:12px;color:#475569;line-height:1.6;margin-bottom:6px;">{idea.get('problem','')}</div>
-            <div style="font-size:12px;color:#475569;line-height:1.6;margin-bottom:6px;">{idea.get('gap','')}</div>
-            <div style="font-size:12px;color:#475569;line-height:1.6;margin-bottom:6px;">{idea.get('how','')}</div>
-            <div style="font-size:12px;color:#334155;line-height:1.6;"><strong>Next step:</strong> {idea.get('next_step','')}</div>
-            <div style="font-size:11px;color:#64748b;margin-top:4px;">{idea.get('revenue','')}</div>
-        </div>"""
-
-    # ── Source sections ──
-    sections = ""
-
-    def _section(label, items, numbered=True):
-        if not items:
-            return ""
-        return f"""
-        <div style="margin-top:28px;">
-            <div style="font-size:13px;font-weight:600;color:{C2};margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #dbeafe;">{label}</div>
-            {_li(items, numbered=numbered)}
-        </div>"""
-
-    sections += _section("Hacker News", hackernews)
-    sections += _section("Product Hunt", producthunt, numbered=False)
-    sections += _section("GitHub Trending", github_trending)
-    sections += _section("HuggingFace Papers", huggingface)
-    sections += _section("Reddit", reddit)
-
-    if youtube:
-        yt_html = ""
-        for v in youtube:
-            yt_html += f'<div style="padding:8px 0;border-bottom:1px solid #f1f5f9;">'
-            yt_html += f'<div style="font-size:13px;"><a href="{v.get("url","")}" style="color:{C};text-decoration:none;">{v.get("title","")}</a> <span style="color:#94a3b8;font-size:12px;">&middot; {v.get("channel","")}</span></div>'
-            if v.get("quote"):
-                yt_html += f'<div style="margin:6px 0 4px 0;padding:6px 10px;border-left:3px solid {CL};background:{CB};color:#475569;font-size:12px;font-style:italic;border-radius:0 4px 4px 0;">"{v["quote"]}"</div>'
-            if v.get("summary"):
-                yt_html += f'<div style="font-size:12px;color:#64748b;margin-top:4px;line-height:1.5;">{v["summary"]}</div>'
-            yt_html += '</div>'
-        sections += f"""
-        <div style="margin-top:28px;">
-            <div style="font-size:13px;font-weight:600;color:{C2};margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #dbeafe;">YouTube</div>
-            {yt_html}
-        </div>"""
-
-    if twitter:
-        tw_html = ""
-        for tw in twitter:
-            tw_html += f'<div style="padding:6px 0;font-size:13px;line-height:1.5;border-bottom:1px solid #f1f5f9;"><span style="color:{C};font-weight:500;">@{tw.get("handle","")}</span> <span style="color:#94a3b8;font-size:12px;">&middot; {tw.get("likes","")} likes</span><br><span style="color:#475569;font-size:12px;">{tw.get("text","")[:180]}</span></div>\n'
-        sections += f"""
-        <div style="margin-top:28px;">
-            <div style="font-size:13px;font-weight:600;color:{C2};margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #dbeafe;">X / Twitter</div>
-            {tw_html}
-        </div>"""
-
-    if newsletters:
-        nl_html = ""
-        for nl in newsletters:
-            nl_html += f'<div style="padding:8px 0;border-bottom:1px solid #f1f5f9;">'
-            nl_html += f'<div style="font-size:13px;font-weight:500;color:#0f172a;">{nl.get("sender","")} <span style="color:#94a3b8;font-size:12px;font-weight:400;">&middot; {nl.get("subject","")}</span></div>'
-            if nl.get("takeaways"):
-                nl_html += f'<div style="font-size:12px;color:#64748b;margin-top:4px;line-height:1.6;">{nl["takeaways"]}</div>'
-            nl_html += '</div>'
-        sections += f"""
-        <div style="margin-top:28px;">
-            <div style="font-size:13px;font-weight:600;color:{C2};margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #dbeafe;">Newsletters</div>
-            {nl_html}
-        </div>"""
-
-    sections += _section("smol.ai", smolai, numbered=False)
-    sections += _section("App Charts", app_charts, numbered=False)
-
-    # Source status
-    status_html = ""
-    if source_status:
-        rows = " &middot; ".join([f'{s.get("name","")} ({s.get("items","")})' for s in source_status if s.get("status") == "OK"])
-        status_html = f'<div style="font-size:11px;color:#64748b;margin-top:24px;padding:12px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;">{rows}</div>'
+    ideas_block = f"""
+        <div style="font-size:15px;font-weight:700;color:{C2};margin:32px 0 18px 0;letter-spacing:0.3px;">IDEAS</div>
+        {ideas_html}""" if ideas_html else ""
 
     # ── Full email ──
     html = f"""<!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#0f172a;">
-<div style="max-width:620px;margin:0 auto;background:#ffffff;">
+<div style="max-width:640px;margin:0 auto;background:#ffffff;">
 
-    <div style="background:#f8fafc;padding:36px 24px 28px;text-align:center;border-bottom:3px solid #2563eb;">
-        <div style="font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#2563eb;">Signal Hunter</div>
-        <div style="width:40px;height:2px;background:#2563eb;margin:10px auto;border-radius:1px;"></div>
-        <div style="font-size:22px;font-weight:300;color:#0f172a;letter-spacing:-0.3px;">{date}</div>
-        <div style="font-size:11px;color:#94a3b8;margin-top:4px;letter-spacing:1px;text-transform:uppercase;">daily digest</div>
+    <div style="background:#f8fafc;padding:40px 28px 32px;text-align:center;border-bottom:3px solid #2563eb;">
+        <div style="font-size:14px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#2563eb;">Signal Hunter</div>
+        <div style="width:40px;height:2px;background:#2563eb;margin:12px auto;border-radius:1px;"></div>
+        <div style="font-size:24px;font-weight:300;color:#0f172a;letter-spacing:-0.3px;">{date}</div>
+        <div style="font-size:12px;color:#94a3b8;margin-top:6px;letter-spacing:1px;text-transform:uppercase;">daily digest</div>
     </div>
 
-    <div style="padding:28px 24px;">
+    <div style="padding:32px 28px;">
 
-        <div style="font-size:14px;line-height:1.75;color:#334155;margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid #dbeafe;">
+        <div style="font-size:15px;line-height:1.8;color:#334155;margin-bottom:32px;padding-bottom:24px;border-bottom:2px solid #dbeafe;">
             {executive_summary}
         </div>
 
-        <div style="font-size:13px;font-weight:700;color:{C2};margin-bottom:14px;letter-spacing:0.3px;">TRENDING SIGNALS</div>
+        <div style="font-size:15px;font-weight:700;color:{C2};margin-bottom:18px;letter-spacing:0.3px;">TRENDING SIGNALS</div>
         {topics_html}
 
-        <div style="font-size:13px;font-weight:700;color:{C2};margin:32px 0 14px 0;letter-spacing:0.3px;">IDEAS</div>
-        {ideas_html}
+        {ideas_block}
 
         {sections}
 
-        {status_html}
-
     </div>
 
-    <div style="padding:16px 24px;background:#f8fafc;border-top:3px solid #2563eb;text-align:center;">
-        <div style="font-size:11px;color:#64748b;">Signal Hunter &mdash; Daily Digest</div>
+    <div style="padding:18px 28px;background:#f8fafc;border-top:3px solid #2563eb;text-align:center;">
+        <div style="font-size:12px;color:#64748b;">Signal Hunter &mdash; Daily Digest</div>
     </div>
 
 </div></body></html>"""
